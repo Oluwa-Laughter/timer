@@ -33,6 +33,12 @@ const Form = forwardRef<FormHandleRef, FormProps>(function Form(
 
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
+
+    if (!formData.get("name") || !formData.get("duration")) {
+      alert("Please fill out the form");
+      return;
+    }
+
     onSave(data);
   }
 
