@@ -10,6 +10,21 @@ type TimersState = {
   timers: Timer[];
 };
 
+type StartTimerAction = {
+  type: "START_TIMERS";
+};
+
+type StopTimerAction = {
+  type: "STOP_TIMERS";
+};
+
+type AddTimerAction = {
+  type: "ADD_TIMER";
+  payload: Timer;
+};
+
+type Action = StartTimerAction | StopTimerAction | AddTimerAction;
+
 type TImersContextValue = TimersState & {
   addTimer: (timerData: Timer) => void;
   startTimers: () => void;
@@ -22,21 +37,59 @@ type TimersProviderProps = {
 
 const TimersContext = createContext<TImersContextValue | null>(null);
 
-const initialState: TImersContextValue = {
+const initialState: TimersState = {
   timers: [],
   isRunning: false,
-  addTimer(timerData) {},
-  startTimers() {},
-  stopTimers() {},
 };
 
-function reducer() {}
+function reducer(state: TimersState, action: Action): TimersState {
+  switch (action.type) {
+    case "ADD_TIMER":
+      return {
+        ...state,
+        timers: [
+          ...state.timers,
+          {
+            name: action.payload.name,
+            duration: action.payload.duration,
+          },
+        ],
+      };
+
+    case "START_TIMERS":
+      return {
+        ...state,
+        isRunning: true,
+      };
+    case "STOP_TIMERS":
+      return {
+        ...state,
+        isRunning: false,
+      };
+    default:
+      return state;
+  }
+}
 
 function TimersProvider({ children }: TimersProviderProps) {
-  const {} = useReducer(reducer, initialState);
+  const [{ timers, isRunning }, dispatch] = useReducer(reducer, initialState);
+
+  const contextValue: TImersContextValue = {
+    timers,
+    isRunning,
+    addTimer: (timerData: Timer) => {
+      dispatch({ type: "ADD_TIMER", payload: timerData });
+    },
+    startTimers: () => {
+      dispatch({ type: "START_TIMERS" });
+    },
+    stopTimers: () => {
+      dispatch({ type: "STOP_TIMERS" });
+    },
+  };
 
   return (
-    <TimersContext.Provider value={initialState}>
+    <TimersContext.Provider value={contextValue}>
       {children}
     </TimersContext.Provider>
   );
